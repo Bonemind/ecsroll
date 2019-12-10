@@ -16,11 +16,15 @@ DEFAULT_ACTION = 'replace'  # 'reboot' or 'replace'
 DEFAULT_WAIT = 30
 
 WAIT_TIME = DEFAULT_WAIT
+NON_INTERACTIVE = False
 
 INSTANCE_FIELDS = ['ec2InstanceId', 'containerInstanceArn', 'status', 'runningTasksCount', 'pendingTasksCount']
 
 
 def yes_or_exit(message):
+    if NON_INTERACTIVE:
+        return
+
     choices = ['y', 'n']
     choice = ''
     while choice not in choices:
@@ -377,12 +381,17 @@ if __name__ == '__main__':
             PROVIDER_PROFILE, PROVIDER_PROFILE, PROVIDER_ENV)
     )
     parser.add_argument(
+        '--non_interactive', '-y', default=NON_INTERACTIVE, action='store_true',
+        help='Whether to auto-confirm actions (default: \'{0}\')'.format(NON_INTERACTIVE)
+    )
+    parser.add_argument(
         'action', nargs='?', default=DEFAULT_ACTION,
         help='Action to take (default: \'{0}\')'.format(DEFAULT_ACTION)
     )
     args = parser.parse_args()
 
     WAIT_TIME = args.wait
+    NON_INTERACTIVE = args.non_interactive
 
     if args.provider == PROVIDER_PROFILE:
         session = boto3.Session()
